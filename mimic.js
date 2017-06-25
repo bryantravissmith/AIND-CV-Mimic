@@ -58,12 +58,11 @@ function log(node_name, msg) {
 // Start button
 function onStart() {
   if (detector && !detector.isRunning) {
+    $("#target").html("Loading...")
     $("#logs").html("");  // clear out previous log
     detector.start();  // start detector
   }
   log('#logs', "Start button pressed");
-  setScore(0, 0)
-  game_timer.start()
 }
 
 // Stop button
@@ -121,6 +120,8 @@ detector.addEventListener("onInitializeSuccess", function() {
 
   // TODO(optional): Call a function to initialize the game, if needed
   // <your code here>
+  setScore(0, 0); // reset scores
+  game_timer.start(); //start the game timers
 });
 
 // Add a callback to receive the results from processing an image
@@ -245,45 +246,7 @@ function increase_total(){
     emoji_total++
 }
 
-
-function Timer(callback, delay) {
-    var timerId, start, original, remaining = delay;
-    var self = this;
-
-    this.callback_function = function() {
-        callback.call();
-        self.reset();
-    }
-
-    this.pause = function() {
-        window.clearTimeout(timerId);
-        remaining -= new Date() - start;
-    };
-
-    this.stop = function() {
-        window.clearTimeout(timerId);
-        remaining = 0;
-    };
-
-    this.resume = function() {
-        start = new Date();
-        window.clearTimeout(timerId);
-        timerId = window.setTimeout(self.callback_function, remaining);
-    };
-
-    this.reset = function(){
-        start = new Date()
-        window.clearTimeout(timerId);
-        window.setTimeout(function(){
-            timerId = window.setTimeout(self.callback_function, original);
-        }, 100)
-
-    }
-
-    //this.resume();
-}
-
-function set_game_interval(callback, delay, repetitions) {
+function set_game_interval(callback, complete_callback, delay, repetitions) {
     var self = this;
     var x = 0;
     var intervalID = null
@@ -296,6 +259,7 @@ function set_game_interval(callback, delay, repetitions) {
 
            if (++x === repetitions) {
                window.clearInterval(intervalID);
+               complete_callback()
            }
         }, delay);
     }
@@ -312,7 +276,10 @@ function update_game(){
     increase_total()
 }
 
-var game_timer = new set_game_interval(update_game, 5000, emojis.length)
+var game_timer = new set_game_interval(update_game,
+    function(){ $("#target").html("Done")},
+    5000,
+    emojis.length)
 
 /*
  new Timer(function(){
